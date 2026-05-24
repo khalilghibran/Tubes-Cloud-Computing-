@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inputapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inputapp
+  template:
+    metadata:
+      labels:
+        app: inputapp
+    spec:
+      containers:
+        - name: inputapp
+          image: yourdockerusername/inputapp:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: DB_HOST
+              value: "mariadb"
+            - name: DB_USER
+              value: "user"
+            - name: DB_PASSWORD
+              value: "password"
+            - name: DB_NAME
+              value: "library"
