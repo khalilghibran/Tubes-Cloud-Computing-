@@ -1,23 +1,22 @@
 <!DOCTYPE html>
-<<<<<<< HEAD
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Peminjaman Alat Laboratorium</title>
     <style>
-        /* Styling sangat dasar agar rapi di tengah dan nyaman dibaca */
+        
         body { font-family: Arial, sans-serif; background-color: #f0f2f5; padding: 20px; }
         .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
         h1, h2 { color: #333; text-align: center; }
         
-        /* Styling Form */
+        
         form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         input, select, button { padding: 10px; font-size: 16px; border: 1px solid #aaa; border-radius: 4px; }
         button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #218838; }
         
-        /* Styling Tabel */
+        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         th { background-color: #007bff; color: white; }
@@ -27,11 +26,10 @@
 
     <div class="container">
         <h1>Sistem Peminjaman Alat Lab</h1>
-        <p style="text-align: center; color: green; font-weight: bold;">Status: Terhubung ke Kubernetes Cluster 🟢</p>
 
         <hr>
 
-        <h2>1. Form Peminjaman (Test Input)</h2>
+        <h2>Form Peminjaman</h2>
         <form action="/pinjam" method="POST">
             <input type="text" name="nama" placeholder="Nama Lengkap" required>
             <input type="text" name="nim" placeholder="NIM" required>
@@ -46,7 +44,7 @@
 
         <hr>
 
-        <h2>2. Data Peminjaman Aktif (Test Display)</h2>
+        <h2>Data Peminjaman Aktif</h2>
         <table>
             <thead>
                 <tr>
@@ -58,56 +56,14 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>101032400169</td>
+                    <td>101032400168</td>
                     <td>Abi Manyu</td>
                     <td>Osiloskop</td>
                     <td style="color: red; font-weight: bold;">Dipinjam</td>
-                </tr>
+                </tr>   
             </tbody>
         </table>
     </div>
 
 </body>
 </html>
-=======
-<html>
-<head>
-    <title>Borrower List</title>
-    <style>
-        body { font-family: Arial; margin: 40px; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background: #f2f2f2; }
-        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; }
-    </style>
-</head>
-<body>
-    <h1>Library Borrowing System</h1>
-    <h2>Borrower List</h2>
-    {% if error %}
-        <div class="error">{{ error }}</div>
-    {% endif %}
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Borrowed At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for b in borrowers %}
-            <tr>
-                <td>{{ b.id }}</td>
-                <td>{{ b.name }}</td>
-                <td>{{ b.created_at }}</td>
-            </tr>
-            {% endfor %}
-            {% if not borrowers %}
-            <tr><td colspan="3">No borrowers yet.</td></tr>
-            {% endif %}
-        </tbody>
-    </table>
-</body>
-</html>
->>>>>>> ecac9053b28e9a623aef510338efb69443c43035
