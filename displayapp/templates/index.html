@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<<<<<<< HEAD
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -68,3 +69,45 @@
 
 </body>
 </html>
+=======
+<html>
+<head>
+    <title>Borrower List</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Library Borrowing System</h1>
+    <h2>Borrower List</h2>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Borrowed At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in borrowers %}
+            <tr>
+                <td>{{ b.id }}</td>
+                <td>{{ b.name }}</td>
+                <td>{{ b.created_at }}</td>
+            </tr>
+            {% endfor %}
+            {% if not borrowers %}
+            <tr><td colspan="3">No borrowers yet.</td></tr>
+            {% endif %}
+        </tbody>
+    </table>
+</body>
+</html>
+>>>>>>> ecac9053b28e9a623aef510338efb69443c43035
