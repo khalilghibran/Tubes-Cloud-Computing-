@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peminjaman Alat Laboratorium</title>
+    <style>
+        /* Styling sangat dasar agar rapi di tengah dan nyaman dibaca */
+        body { font-family: Arial, sans-serif; background-color: #f0f2f5; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
+        h1, h2 { color: #333; text-align: center; }
+        
+        /* Styling Form */
+        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        input, select, button { padding: 10px; font-size: 16px; border: 1px solid #aaa; border-radius: 4px; }
+        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #218838; }
+        
+        /* Styling Tabel */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Sistem Peminjaman Alat Lab</h1>
+        <p style="text-align: center; color: green; font-weight: bold;">Status: Terhubung ke Kubernetes Cluster 🟢</p>
+
+        <hr>
+
+        <h2>1. Form Peminjaman (Test Input)</h2>
+        <form action="/pinjam" method="POST">
+            <input type="text" name="nama" placeholder="Nama Lengkap" required>
+            <input type="text" name="nim" placeholder="NIM" required>
+            <select name="alat" required>
+                <option value="" disabled selected>Pilih Alat yang Dipinjam...</option>
+                <option value="multimeter">Digital Multimeter</option>
+                <option value="osiloskop">Osiloskop</option>
+                <option value="soldering">Soldering Iron</option>
+            </select>
+            <button type="submit">Submit Peminjaman</button>
+        </form>
+
+        <hr>
+
+        <h2>2. Data Peminjaman Aktif (Test Display)</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>NIM</th>
+                    <th>Nama</th>
+                    <th>Alat</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>101032400169</td>
+                    <td>Abi Manyu</td>
+                    <td>Osiloskop</td>
+                    <td style="color: red; font-weight: bold;">Dipinjam</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
