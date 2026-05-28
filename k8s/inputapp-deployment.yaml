@@ -14,15 +14,15 @@ spec:
     spec:
       containers:
         - name: inputapp
-          image: yourdockerusername/inputapp:latest
+          image: khalilghibran/inputapp:latest
           ports:
             - containerPort: 5000
           env:
             - name: DB_HOST
-              value: "mariadb"
+              value: "mariadb-0.mariadb"
             - name: DB_USER
-              value: "user"
+              value: "root"
             - name: DB_PASSWORD
-              value: "password"
+              value: "rootpassword"
             - name: DB_NAME
-              value: "library"
+              value: "labdb"

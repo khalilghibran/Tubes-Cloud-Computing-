@@ -22,7 +22,7 @@ spec:
             - name: MYSQL_ROOT_PASSWORD
               value: "rootpassword"
             - name: MYSQL_DATABASE
-              value: "library"
+              value: "labdb"
             - name: MYSQL_USER
               value: "user"
             - name: MYSQL_PASSWORD

@@ -1,69 +1,168 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peminjaman Alat Laboratorium</title>
+    <title>Lab Equipment Status</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { 
+            max-width: 900px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 { color: #333; margin-bottom: 10px; text-align: center; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
         
-        body { font-family: Arial, sans-serif; background-color: #f0f2f5; padding: 20px; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; border: 1px solid #ccc; }
-        h1, h2 { color: #333; text-align: center; }
+        .error { 
+            color: #721c24;
+            background: #f8d7da; 
+            padding: 12px; 
+            border-radius: 6px; 
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
         
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        td { 
+            padding: 12px 15px; 
+            border-bottom: 1px solid #ddd;
+        }
+        tr:hover { background-color: #f9f9f9; }
         
-        form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        input, select, button { padding: 10px; font-size: 16px; border: 1px solid #aaa; border-radius: 4px; }
-        button { background-color: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #218838; }
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .status-borrowed {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .status-returned {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
         
+        .return-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+        .return-btn:hover { background: #218838; }
+        .return-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #007bff; color: white; }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .empty-state-icon { font-size: 48px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <h1>Sistem Peminjaman Alat Lab</h1>
+        <h1>🔍 Laboratory Equipment Status</h1>
+        <p class="subtitle">Track active equipment loans</p>
+        
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% endif %}
 
-        <hr>
-
-        <h2>Form Peminjaman</h2>
-        <form action="/pinjam" method="POST">
-            <input type="text" name="nama" placeholder="Nama Lengkap" required>
-            <input type="text" name="nim" placeholder="NIM" required>
-            <select name="alat" required>
-                <option value="" disabled selected>Pilih Alat yang Dipinjam...</option>
-                <option value="multimeter">Digital Multimeter</option>
-                <option value="osiloskop">Osiloskop</option>
-                <option value="soldering">Soldering Iron</option>
-            </select>
-            <button type="submit">Submit Peminjaman</button>
-        </form>
-
-        <hr>
-
-        <h2>Data Peminjaman Aktif</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>NIM</th>
-                    <th>Nama</th>
-                    <th>Alat</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>101032400168</td>
-                    <td>Abi Manyu</td>
-                    <td>Osiloskop</td>
-                    <td style="color: red; font-weight: bold;">Dipinjam</td>
-                </tr>   
-            </tbody>
-        </table>
+        {% if borrow_records %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Borrower</th>
+                        <th>Borrow Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in borrow_records %}
+                    <tr>
+                        <td><strong>{{ record.equipment_name }}</strong></td>
+                        <td>{{ record.borrower_name }}</td>
+                        <td>{{ record.borrow_date.strftime('%Y-%m-%d %H:%M') if record.borrow_date else 'N/A' }}</td>
+                        <td>
+                            <span class="status-badge status-{{ record.status }}">{{ record.status | upper }}</span>
+                        </td>
+                        <td>
+                            {% if record.status == 'borrowed' %}
+                            <button class="return-btn" onclick="returnEquipment({{ record.id }})">
+                                ✓ Return
+                            </button>
+                            {% else %}
+                            <span style="color: #6c757d;">Completed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📭</div>
+                <p>No active equipment loans</p>
+            </div>
+        {% endif %}
     </div>
 
+    <script>
+        function returnEquipment(recordId) {
+            if (confirm('Mark equipment as returned?')) {
+                fetch('/api/return-equipment', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ record_id: recordId })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Equipment returned successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(err => alert('Error: ' + err));
+            }
+        }
+    </script>
 </body>
 </html>
