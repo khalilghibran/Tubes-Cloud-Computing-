@@ -25,22 +25,67 @@ def get_db():
 def index():
     borrow_records = []
     error = None
+    filters = {
+        'nim': request.args.get('nim', ''),
+        'equipment': request.args.get('equipment', ''),
+        'fakultas': request.args.get('fakultas', ''),
+        'status': request.args.get('status', '')
+    }
+    
     try:
         conn = get_db()
         with conn.cursor() as cur:
-            cur.execute("""
+            # Build dynamic WHERE clause
+            where_clauses = []
+            params = []
+            
+            if filters['nim']:
+                where_clauses.append("br.nim LIKE %s")
+                params.append(f"%{filters['nim']}%")
+            if filters['equipment']:
+                where_clauses.append("e.name LIKE %s")
+                params.append(f"%{filters['equipment']}%")
+            if filters['fakultas']:
+                where_clauses.append("br.fakultas = %s")
+                params.append(filters['fakultas'])
+            if filters['status']:
+                where_clauses.append("br.status = %s")
+                params.append(filters['status'])
+            
+            where_sql = " AND ".join(where_clauses)
+            if where_sql:
+                where_sql = " WHERE " + where_sql
+            
+            query = f"""
                 SELECT br.id, e.name as equipment_name, br.borrower_name, 
-                       br.borrow_date, br.return_date, br.status
+                       br.nim, br.fakultas, br.borrow_date, br.return_date, br.status
                 FROM borrow_records br
                 JOIN equipment e ON br.equipment_id = e.id
+                {where_sql}
                 ORDER BY br.borrow_date DESC
-            """)
+            """
+            
+            cur.execute(query, params)
             borrow_records = cur.fetchall()
+            
+            # Calculate overdue status for each record
+            from datetime import datetime, timedelta
+            for record in borrow_records:
+                record['is_overdue'] = False
+                record['days_overdue'] = 0
+                if record['status'] == 'borrowed' and record['return_date']:
+                    return_date = record['return_date']
+                    if isinstance(return_date, str):
+                        return_date = datetime.strptime(return_date, '%Y-%m-%d')
+                    today = datetime.now().date()
+                    if return_date.date() < today:
+                        record['is_overdue'] = True
+                        record['days_overdue'] = (today - return_date.date()).days
         conn.close()
     except Exception as e:
         error = f"Gagal mengambil data: {e}"
     
-    return render_template("index.html", borrow_records=borrow_records, error=error)
+    return render_template("index.html", borrow_records=borrow_records, error=error, filters=filters)
 
 @app.route("/api/return-equipment", methods=["POST"])
 def return_equipment():

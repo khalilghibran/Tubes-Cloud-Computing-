@@ -102,12 +102,51 @@
             <div class="error">{{ error }}</div>
         {% endif %}
 
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 15px; color: #333;">🔎 Cari dan Filter</h3>
+            <form method="GET" style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: end;">
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">NIM:</label>
+                    <input type="text" name="nim" placeholder="Cari NIM..." value="{{ filters.nim }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Alat:</label>
+                    <input type="text" name="equipment" placeholder="Cari alat..." value="{{ filters.equipment }}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Fakultas:</label>
+                    <select name="fakultas" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">-- Semua Fakultas --</option>
+                        <option value="Fakultas Teknik Elektro" {% if filters.fakultas == 'Fakultas Teknik Elektro' %}selected{% endif %}>Fakultas Teknik Elektro</option>
+                        <option value="Fakultas Rekayasa Industri" {% if filters.fakultas == 'Fakultas Rekayasa Industri' %}selected{% endif %}>Fakultas Rekayasa Industri</option>
+                        <option value="Fakultas Informatika" {% if filters.fakultas == 'Fakultas Informatika' %}selected{% endif %}>Fakultas Informatika</option>
+                        <option value="Fakultas Ekonomi dan Bisnis" {% if filters.fakultas == 'Fakultas Ekonomi dan Bisnis' %}selected{% endif %}>Fakultas Ekonomi dan Bisnis</option>
+                        <option value="Fakultas Komunikasi dan Ilmu Sosial" {% if filters.fakultas == 'Fakultas Komunikasi dan Ilmu Sosial' %}selected{% endif %}>Fakultas Komunikasi dan Ilmu Sosial</option>
+                        <option value="Fakultas Industri Kreatif" {% if filters.fakultas == 'Fakultas Industri Kreatif' %}selected{% endif %}>Fakultas Industri Kreatif</option>
+                        <option value="Fakultas Ilmu Terapan" {% if filters.fakultas == 'Fakultas Ilmu Terapan' %}selected{% endif %}>Fakultas Ilmu Terapan</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 600; margin-bottom: 5px; font-size: 14px;">Status:</label>
+                    <select name="status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                        <option value="">-- Semua Status --</option>
+                        <option value="borrowed" {% if filters.status == 'borrowed' %}selected{% endif %}>Dipinjam</option>
+                        <option value="returned" {% if filters.status == 'returned' %}selected{% endif %}>Dikembalikan</option>
+                    </select>
+                </div>
+                <button type="submit" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Cari</button>
+                <a href="/display" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; text-decoration: none; text-align: center;">Reset</a>
+            </form>
+        </div>
+
         {% if borrow_records %}
             <table>
                 <thead>
                     <tr>
                         <th>Alat</th>
                         <th>Peminjam</th>
+                        <th>NIM</th>
+                        <th>Fakultas</th>
                         <th>Tgl Pinjam</th>
                         <th>Status</th>
                         <th>Aksi</th>
@@ -115,12 +154,18 @@
                 </thead>
                 <tbody>
                     {% for record in borrow_records %}
-                    <tr>
+                    <tr {% if record.is_overdue %}style="background-color: #fff3cd;"{% endif %}>
                         <td><strong>{{ record.equipment_name }}</strong></td>
                         <td>{{ record.borrower_name }}</td>
+                        <td>{{ record.nim }}</td>
+                        <td>{{ record.fakultas }}</td>
                         <td>{{ record.borrow_date.strftime('%Y-%m-%d %H:%M') if record.borrow_date else 'N/A' }}</td>
                         <td>
-                            <span class="status-badge status-{{ record.status }}">{{ 'Dipinjam' if record.status == 'borrowed' else 'Dikembalikan' }}</span>
+                            {% if record.is_overdue %}
+                                <span class="status-badge" style="background: #dc3545; color: white;">Overdue {{ record.days_overdue }} hari</span>
+                            {% else %}
+                                <span class="status-badge status-{{ record.status }}">{{ 'Dipinjam' if record.status == 'borrowed' else 'Dikembalikan' }}</span>
+                            {% endif %}
                         </td>
                         <td>
                             {% if record.status == 'borrowed' %}

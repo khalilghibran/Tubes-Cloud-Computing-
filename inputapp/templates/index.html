@@ -81,7 +81,7 @@
                 <select name="equipment_id" id="equipment" required>
                     <option value="">-- Pilih Alat --</option>
                     {% for equip in equipment_list %}
-                    <option value="{{ equip.id }}">{{ equip.name }}</option>
+                    <option value="{{ equip.id }}">{{ equip.name }} ({% if equip.borrowed_count > 0 %}{{ equip.borrowed_count }} dipinjam{% else %}Tersedia{% endif %})</option>
                     {% endfor %}
                 </select>
             </div>
@@ -90,7 +90,29 @@
                 <label for="borrower">Nama Anda:</label>
                 <input type="text" name="borrower_name" id="borrower" placeholder="Masukkan nama lengkap Anda" required>
             </div>
+            <div class="form-group">
+                <label for="nim">Nomor Induk Mahasiswa (NIM):</label>
+                <input type="text" name="nim" id="nim" placeholder="Contoh: 12345678" required>
+            </div>
+
+            <div class="form-group">
+                <label for="fakultas">Fakultas:</label>
+                <select name="fakultas" id="fakultas" required>
+                    <option value="">-- Pilih Fakultas --</option>
+                    <option value="Fakultas Teknik Elektro">Fakultas Teknik Elektro</option>
+                    <option value="Fakultas Rekayasa Industri">Fakultas Rekayasa Industri</option>
+                    <option value="Fakultas Informatika">Fakultas Informatika</option>
+                    <option value="Fakultas Ekonomi dan Bisnis">Fakultas Ekonomi dan Bisnis</option>
+                    <option value="Fakultas Komunikasi dan Ilmu Sosial">Fakultas Komunikasi dan Ilmu Sosial</option>
+                    <option value="Fakultas Industri Kreatif">Fakultas Industri Kreatif</option>
+                    <option value="Fakultas Ilmu Terapan">Fakultas Ilmu Terapan</option>
+                </select>
+            </div>
             
+            <div class="form-group">
+                <label for="return_date">Tanggal Pengembalian:</label>
+                <input type="date" name="return_date" id="return_date" required>
+            </div>            
             <button type="submit">Pinjam Alat</button>
         </form>
     </div>

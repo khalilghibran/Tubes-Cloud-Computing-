@@ -20,47 +20,60 @@ def get_db():
     )
 
 def init_db():
-    try:
-        conn = get_db()
-        with conn.cursor() as cur:
-            # Create equipment table
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS equipment (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    name VARCHAR(255) NOT NULL UNIQUE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
+    import time
+    max_retries = 10
+    retry_count = 0
+    
+    while retry_count < max_retries:
+        try:
+            conn = get_db()
+            with conn.cursor() as cur:
+                # Create equipment table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS equipment (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        name VARCHAR(255) NOT NULL UNIQUE,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                
+                # Create borrow records table
+                cur.execute("""
+                    CREATE TABLE IF NOT EXISTS borrow_records (
+                        id INT AUTO_INCREMENT PRIMARY KEY,
+                        equipment_id INT NOT NULL,
+                        borrower_name VARCHAR(255) NOT NULL,
+                        nim VARCHAR(20),
+                        fakultas VARCHAR(255),
+                        borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        return_date DATETIME,
+                        status ENUM('borrowed', 'returned') DEFAULT 'borrowed',
+                        FOREIGN KEY (equipment_id) REFERENCES equipment(id)
+                    )
+                """)
+                
+                # Insert default equipment
+                equipment_list = [
+                    'Multimeter', 'Osiloskop', 'Solder', 'Wave Generator',
+                    '3D Printer', 'Server', 'Komputer', 'Ruangan'
+                ]
+                for equip in equipment_list:
+                    cur.execute(
+                        "INSERT IGNORE INTO equipment (name) VALUES (%s)",
+                        (equip,)
+                    )
             
-            # Create borrow records table
-            cur.execute("""
-                CREATE TABLE IF NOT EXISTS borrow_records (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    equipment_id INT NOT NULL,
-                    borrower_name VARCHAR(255) NOT NULL,
-                    borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    return_date DATETIME,
-                    status ENUM('borrowed', 'returned') DEFAULT 'borrowed',
-                    FOREIGN KEY (equipment_id) REFERENCES equipment(id)
-                )
-            """)
-            
-            # Insert default equipment
-            equipment_list = [
-                'Multimeter', 'Osiloskop', 'Solder', 'Wave Generator',
-                '3D Printer', 'Server', 'Komputer', 'Ruangan'
-            ]
-            for equip in equipment_list:
-                cur.execute(
-                    "INSERT IGNORE INTO equipment (name) VALUES (%s)",
-                    (equip,)
-                )
-        
-        conn.commit()
-        conn.close()
-        print("[inputapp] Database initialized successfully")
-    except Exception as e:
-        print(f"[inputapp] DB init error: {e}")
+            conn.commit()
+            conn.close()
+            print("[inputapp] Database initialized successfully")
+            return
+        except Exception as e:
+            retry_count += 1
+            if retry_count >= max_retries:
+                print(f"[inputapp] DB init failed after {max_retries} retries: {e}")
+                return
+            print(f"[inputapp] Connection attempt {retry_count}/{max_retries} failed, retrying in 2 seconds...")
+            time.sleep(2)
 
 init_db()
 
@@ -74,7 +87,15 @@ def index():
     try:
         conn = get_db()
         with conn.cursor() as cur:
-            cur.execute("SELECT id, name FROM equipment ORDER BY name")
+            # Get equipment with availability count
+            cur.execute("""
+                SELECT e.id, e.name, 
+                       COUNT(CASE WHEN br.status = 'borrowed' THEN 1 END) as borrowed_count
+                FROM equipment e
+                LEFT JOIN borrow_records br ON e.id = br.equipment_id
+                GROUP BY e.id, e.name
+                ORDER BY e.name
+            """)
             equipment_list = cur.fetchall()
         conn.close()
     except Exception as e:
@@ -84,19 +105,22 @@ def index():
     if request.method == "POST":
         equipment_id = request.form.get("equipment_id", "").strip()
         borrower_name = request.form.get("borrower_name", "").strip()
+        nim = request.form.get("nim", "").strip()
+        fakultas = request.form.get("fakultas", "").strip()
+        return_date = request.form.get("return_date", "").strip()
         
-        if not equipment_id or not borrower_name:
-            message = "Silakan pilih alat dan masukkan nama Anda."
+        if not equipment_id or not borrower_name or not nim or not fakultas or not return_date:
+            message = "Silakan lengkapi semua data."
         else:
             try:
                 conn = get_db()
                 with conn.cursor() as cur:
                     cur.execute(
                         """
-                        INSERT INTO borrow_records (equipment_id, borrower_name)
-                        VALUES (%s, %s)
+                        INSERT INTO borrow_records (equipment_id, borrower_name, nim, fakultas, return_date)
+                        VALUES (%s, %s, %s, %s, %s)
                         """,
-                        (equipment_id, borrower_name)
+                        (equipment_id, borrower_name, nim, fakultas, return_date)
                     )
                     cur.execute("SELECT name FROM equipment WHERE id = %s", (equipment_id,))
                     equip = cur.fetchone()
