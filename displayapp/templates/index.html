@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab Equipment Status</title>
+    <title>Status Alat Lab</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -95,8 +95,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Laboratory Equipment Status</h1>
-        <p class="subtitle">Track active equipment loans</p>
+        <h1>🔍 Status Alat Laboratorium</h1>
+        <p class="subtitle">Lacak peminjaman alat aktif</p>
         
         {% if error %}
             <div class="error">{{ error }}</div>
@@ -106,11 +106,11 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Equipment</th>
-                        <th>Borrower</th>
-                        <th>Borrow Date</th>
+                        <th>Alat</th>
+                        <th>Peminjam</th>
+                        <th>Tgl Pinjam</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -120,15 +120,15 @@
                         <td>{{ record.borrower_name }}</td>
                         <td>{{ record.borrow_date.strftime('%Y-%m-%d %H:%M') if record.borrow_date else 'N/A' }}</td>
                         <td>
-                            <span class="status-badge status-{{ record.status }}">{{ record.status | upper }}</span>
+                            <span class="status-badge status-{{ record.status }}">{{ 'Dipinjam' if record.status == 'borrowed' else 'Dikembalikan' }}</span>
                         </td>
                         <td>
                             {% if record.status == 'borrowed' %}
                             <button class="return-btn" onclick="returnEquipment({{ record.id }})">
-                                ✓ Return
+                                ✓ Kembalikan
                             </button>
                             {% else %}
-                            <span style="color: #6c757d;">Completed</span>
+                            <span style="color: #6c757d;">Selesai</span>
                             {% endif %}
                         </td>
                     </tr>
@@ -137,15 +137,14 @@
             </table>
         {% else %}
             <div class="empty-state">
-                <div class="empty-state-icon">📭</div>
-                <p>No active equipment loans</p>
+                <p>Tidak ada peminjaman alat</p>
             </div>
         {% endif %}
     </div>
 
     <script>
         function returnEquipment(recordId) {
-            if (confirm('Mark equipment as returned?')) {
+            if (confirm('Tandai alat sudah dikembalikan?')) {
                 fetch('/api/return-equipment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -154,13 +153,13 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        alert('Equipment returned successfully!');
+                        alert('Alat berhasil dikembalikan!');
                         location.reload();
                     } else {
-                        alert('Error: ' + data.message);
+                        alert('Kesalahan: ' + data.message);
                     }
                 })
-                .catch(err => alert('Error: ' + err));
+                .catch(err => alert('Kesalahan: ' + err));
             }
         }
     </script>

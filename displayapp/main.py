@@ -38,7 +38,7 @@ def index():
             borrow_records = cur.fetchall()
         conn.close()
     except Exception as e:
-        error = f"Could not fetch data: {e}"
+        error = f"Gagal mengambil data: {e}"
     
     return render_template("index.html", borrow_records=borrow_records, error=error)
 
@@ -48,7 +48,7 @@ def return_equipment():
     try:
         record_id = request.json.get("record_id")
         if not record_id:
-            return jsonify({"success": False, "message": "Record ID required"}), 400
+            return jsonify({"success": False, "message": "ID record diperlukan"}), 400
         
         conn = get_db()
         with conn.cursor() as cur:
@@ -60,7 +60,7 @@ def return_equipment():
         conn.commit()
         conn.close()
         
-        return jsonify({"success": True, "message": "Equipment returned successfully"})
+        return jsonify({"success": True, "message": "Alat berhasil dikembalikan"})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

@@ -78,7 +78,7 @@ def index():
             equipment_list = cur.fetchall()
         conn.close()
     except Exception as e:
-        message = f"Error loading equipment: {e}"
+        message = f"Gagal memuat alat: {e}"
         return render_template("index.html", message=message, equipment_list=[])
     
     if request.method == "POST":
@@ -86,7 +86,7 @@ def index():
         borrower_name = request.form.get("borrower_name", "").strip()
         
         if not equipment_id or not borrower_name:
-            message = "Please select equipment and enter your name."
+            message = "Silakan pilih alat dan masukkan nama Anda."
         else:
             try:
                 conn = get_db()
@@ -103,9 +103,9 @@ def index():
                 conn.commit()
                 conn.close()
                 equip_name = equip["name"] if equip else "Unknown"
-                message = f"'{borrower_name}' borrowed '{equip_name}' successfully!"
+                message = f"'{borrower_name}' berhasil meminjam '{equip_name}'!"
             except Exception as e:
-                message = f"Error: {e}"
+                message = f"Kesalahan: {e}"
     
     return render_template("index.html", message=message, equipment_list=equipment_list)
 

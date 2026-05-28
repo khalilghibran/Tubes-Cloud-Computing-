@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lab Equipment Borrow</title>
+    <title>Peminjaman Alat Lab</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -68,8 +68,8 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔬 Laboratory Equipment Borrowing</h1>
-        <p class="subtitle">Borrow equipment for your lab work</p>
+        <h1>🔬 Peminjaman Alat Laboratorium</h1>
+        <p class="subtitle">Pinjam alat untuk pekerjaan lab Anda</p>
         
         {% if message %}
             <div class="msg {% if 'Error' in message or 'Please' in message %}error{% else %}success{% endif %}">{{ message }}</div>
@@ -77,9 +77,9 @@
         
         <form method="POST">
             <div class="form-group">
-                <label for="equipment">Select Equipment:</label>
+                <label for="equipment">Pilih Alat:</label>
                 <select name="equipment_id" id="equipment" required>
-                    <option value="">-- Choose Equipment --</option>
+                    <option value="">-- Pilih Alat --</option>
                     {% for equip in equipment_list %}
                     <option value="{{ equip.id }}">{{ equip.name }}</option>
                     {% endfor %}
@@ -87,11 +87,11 @@
             </div>
             
             <div class="form-group">
-                <label for="borrower">Your Name:</label>
-                <input type="text" name="borrower_name" id="borrower" placeholder="Enter your full name" required>
+                <label for="borrower">Nama Anda:</label>
+                <input type="text" name="borrower_name" id="borrower" placeholder="Masukkan nama lengkap Anda" required>
             </div>
             
-            <button type="submit">📤 Borrow Equipment</button>
+            <button type="submit">Pinjam Alat</button>
         </form>
     </div>
 </body>
