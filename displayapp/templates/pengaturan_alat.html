@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan Alat</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        .header {
+            background: linear-gradient(90deg, #8B3A3A 0%, #A84C4C 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .header-logo { display: flex; align-items: center; gap: 15px; }
+        .header-logo img { height: 40px; width: auto; }
+        .header-title { font-size: 18px; font-weight: 700; }
+        .header-user { font-size: 14px; color: rgba(255,255,255,0.9); }
+        .nav-tabs {
+            background: white; padding: 0; display: flex;
+            border-bottom: 1px solid #ddd; margin: 0;
+        }
+        .nav-tabs .tab {
+            padding: 15px 30px; color: #666; cursor: pointer;
+            border-bottom: 3px solid transparent; font-weight: 500; transition: all 0.3s;
+        }
+        .nav-tabs .tab:hover { color: #8B3A3A; }
+        .nav-tabs .tab.active { color: #8B3A3A; border-bottom-color: #8B3A3A; }
+        .wrapper { display: flex; height: calc(100vh - 120px); }
+        .sidebar {
+            width: 220px; background: #f8f8f8;
+            border-right: 1px solid #ddd; padding: 20px 0;
+        }
+        .sidebar-title {
+            padding: 15px 20px; color: #333; font-weight: 700;
+            font-size: 13px; text-transform: uppercase; margin-bottom: 10px;
+        }
+        .sidebar-menu { list-style: none; }
+        .sidebar-menu li { margin: 0; }
+        .sidebar-menu a {
+            display: block; padding: 12px 20px; color: #666;
+            text-decoration: none; border-left: 3px solid transparent;
+            transition: all 0.3s; font-size: 14px;
+        }
+        .sidebar-menu a:hover {
+            background: #e8e8e8; color: #8B3A3A; border-left-color: #8B3A3A;
+        }
+        .sidebar-menu a.active {
+            background: #e8e8e8; color: #8B3A3A;
+            border-left-color: #8B3A3A; font-weight: 600;
+        }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .content-header { margin-bottom: 30px; }
+        .content-header h2 { color: #333; font-size: 28px; margin-bottom: 10px; }
+        .content-header p { color: #999; font-size: 14px; }
+        .error {
+            background: #f8d7da; color: #721c24; padding: 15px;
+            border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #721c24;
+        }
+        .success {
+            background: #d4edda; color: #155724; padding: 15px;
+            border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #155724;
+        }
+
+        .card {
+            background: white; border-radius: 8px; padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px;
+        }
+        .card-title {
+            font-weight: 600; color: #333; margin-bottom: 15px; font-size: 14px;
+        }
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+        }
+        .card-header .card-title { margin-bottom: 0; }
+
+        .btn {
+            padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;
+            font-weight: 600; font-size: 13px; transition: all 0.3s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #8B3A3A 0%, #A84C4C 100%);
+            color: white;
+        }
+        .btn-primary:hover { box-shadow: 0 3px 10px rgba(139, 58, 58, 0.3); }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: linear-gradient(135deg, #8B3A3A 0%, #A84C4C 100%);
+            color: white; padding: 12px; text-align: left; font-weight: 600; font-size: 13px;
+        }
+        td { padding: 10px 12px; border-bottom: 1px solid #ddd; font-size: 13px; vertical-align: middle; }
+        tr:hover { background-color: #f9f9f9; }
+        .action-buttons { display: flex; gap: 6px; }
+
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white; border-radius: 8px; padding: 30px;
+            width: 90%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .modal h3 { margin-bottom: 20px; color: #333; }
+        .modal .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .modal .form-group label {
+            font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 500;
+        }
+        .modal .form-group input {
+            padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;
+        }
+        .modal .form-group input:focus {
+            outline: none; border-color: #8B3A3A; box-shadow: 0 0 0 3px rgba(139, 58, 58, 0.1);
+        }
+        .modal .btn-row { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+        .empty-state { text-align: center; padding: 40px; color: #999; }
+        .empty-state-icon { font-size: 48px; margin-bottom: 10px; }
+
+        @media (max-width: 768px) {
+            .wrapper { flex-direction: column; height: auto; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ddd; }
+            .main-content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-logo">
+            <img src="{{ url_for('static', filename='telkom-logo.png') }}" alt="Telkom University">
+            <div class="header-title">Lab Equipment System</div>
+        </div>
+        <div class="header-user">Pengaturan Alat Laboratorium</div>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="tab active">Beranda</div>
+    </div>
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="sidebar-title">Menu</div>
+            <ul class="sidebar-menu">
+                <li><a href="/">Kelola Peminjaman</a></li>
+                <li><a href="/laporan">Laporan Peminjaman</a></li>
+                <li><a href="/pengaturan-alat" class="active">Pengaturan Alat</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="content-header">
+                <h2>Pengaturan Alat</h2>
+                <p>Kelola daftar alat laboratorium</p>
+            </div>
+
+            <div id="message"></div>
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Daftar Alat</div>
+                    <button class="btn btn-primary" onclick="openAddModal()">+ Tambah Alat</button>
+                </div>
+                {% if equipment_list %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Nama Alat</th>
+                            <th>Jumlah Stok</th>
+                            <th>Sedang Dipinjam</th>
+                            <th>Tersedia</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equip in equipment_list %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td><strong>{{ equip.name }}</strong></td>
+                            <td>{{ equip.quantity }}</td>
+                            <td>{{ equip.borrowed_count }}</td>
+                            <td>{{ equip.quantity - equip.borrowed_count }}</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn btn-warning" onclick="openEditModal({{ equip.id }}, '{{ equip.name }}', {{ equip.quantity }})">Edit</button>
+                                    <button class="btn btn-danger" onclick="deleteEquipment({{ equip.id }}, '{{ equip.name }}')">Hapus</button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔧</div>
+                    <p>Belum ada alat terdaftar</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal">
+            <h3>Tambah Alat Baru</h3>
+            <div class="form-group">
+                <label>Nama Alat:</label>
+                <input type="text" id="addName" placeholder="Masukkan nama alat">
+            </div>
+            <div class="form-group">
+                <label>Jumlah Stok:</label>
+                <input type="number" id="addQuantity" value="1" min="1">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeModal('addModal')">Batal</button>
+                <button class="btn btn-success" onclick="addEquipment()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <h3>Edit Alat</h3>
+            <input type="hidden" id="editId">
+            <div class="form-group">
+                <label>Nama Alat:</label>
+                <input type="text" id="editName" placeholder="Masukkan nama alat">
+            </div>
+            <div class="form-group">
+                <label>Jumlah Stok:</label>
+                <input type="number" id="editQuantity" value="1" min="1">
+            </div>
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="closeModal('editModal')">Batal</button>
+                <button class="btn btn-success" onclick="editEquipment()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMessage(text, type) {
+            const el = document.getElementById('message');
+            el.innerHTML = '<div class="' + type + '">' + text + '</div>';
+            setTimeout(() => el.innerHTML = '', 5000);
+        }
+
+        function openAddModal() {
+            document.getElementById('addName').value = '';
+            document.getElementById('addQuantity').value = '1';
+            document.getElementById('addModal').classList.add('active');
+        }
+
+        function openEditModal(id, name, quantity) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editQuantity').value = quantity;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function addEquipment() {
+            const name = document.getElementById('addName').value.trim();
+            const quantity = parseInt(document.getElementById('addQuantity').value) || 1;
+            if (!name) { showMessage('Nama alat harus diisi', 'error'); return; }
+
+            fetch('/api/equipment/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, quantity: quantity })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    closeModal('addModal');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            });
+        }
+
+        function editEquipment() {
+            const id = parseInt(document.getElementById('editId').value);
+            const name = document.getElementById('editName').value.trim();
+            const quantity = parseInt(document.getElementById('editQuantity').value) || 1;
+            if (!name) { showMessage('Nama alat harus diisi', 'error'); return; }
+
+            fetch('/api/equipment/edit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, name: name, quantity: quantity })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    closeModal('editModal');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            });
+        }
+
+        function deleteEquipment(id, name) {
+            if (!confirm('Hapus alat "' + name + '"?')) return;
+
+            fetch('/api/equipment/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage(data.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showMessage(data.message, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

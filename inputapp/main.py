@@ -1,5 +1,6 @@
 import os
 import pymysql
+import random
 from flask import Flask, request, render_template
 from datetime import datetime
 
@@ -33,9 +34,18 @@ def init_db():
                     CREATE TABLE IF NOT EXISTS equipment (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         name VARCHAR(255) NOT NULL UNIQUE,
+                        quantity INT DEFAULT 1,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+                
+                # Add quantity column if it doesn't exist (try and catch if it already exists)
+                try:
+                    cur.execute("""
+                        ALTER TABLE equipment ADD COLUMN quantity INT DEFAULT 1
+                    """)
+                except pymysql.err.OperationalError:
+                    pass  # Column already exists
                 
                 # Create borrow records table
                 cur.execute("""
@@ -47,20 +57,28 @@ def init_db():
                         fakultas VARCHAR(255),
                         borrow_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         return_date DATETIME,
-                        status ENUM('borrowed', 'returned') DEFAULT 'borrowed',
+                        status ENUM('requested', 'borrowed', 'returned') DEFAULT 'requested',
                         FOREIGN KEY (equipment_id) REFERENCES equipment(id)
                     )
                 """)
                 
-                # Insert default equipment
+                try:
+                    cur.execute("""
+                        ALTER TABLE borrow_records MODIFY COLUMN status ENUM('requested', 'borrowed', 'returned') DEFAULT 'requested'
+                    """)
+                except pymysql.err.OperationalError:
+                    pass
+                
+                # Insert default equipment with random quantities
                 equipment_list = [
                     'Multimeter', 'Osiloskop', 'Solder', 'Wave Generator',
                     '3D Printer', 'Server', 'Komputer', 'Ruangan'
                 ]
                 for equip in equipment_list:
+                    random_qty = random.randint(1, 7)
                     cur.execute(
-                        "INSERT IGNORE INTO equipment (name) VALUES (%s)",
-                        (equip,)
+                        "INSERT INTO equipment (name, quantity) VALUES (%s, %s) ON DUPLICATE KEY UPDATE quantity = VALUES(quantity)",
+                        (equip, random_qty)
                     )
             
             conn.commit()
@@ -107,9 +125,10 @@ def index():
         borrower_name = request.form.get("borrower_name", "").strip()
         nim = request.form.get("nim", "").strip()
         fakultas = request.form.get("fakultas", "").strip()
+        borrow_date = request.form.get("borrow_date", "").strip()
         return_date = request.form.get("return_date", "").strip()
         
-        if not equipment_id or not borrower_name or not nim or not fakultas or not return_date:
+        if not equipment_id or not borrower_name or not nim or not fakultas or not borrow_date or not return_date:
             message = "Silakan lengkapi semua data."
         else:
             try:
@@ -117,10 +136,10 @@ def index():
                 with conn.cursor() as cur:
                     cur.execute(
                         """
-                        INSERT INTO borrow_records (equipment_id, borrower_name, nim, fakultas, return_date)
-                        VALUES (%s, %s, %s, %s, %s)
+                        INSERT INTO borrow_records (equipment_id, borrower_name, nim, fakultas, borrow_date, return_date)
+                        VALUES (%s, %s, %s, %s, %s, %s)
                         """,
-                        (equipment_id, borrower_name, nim, fakultas, return_date)
+                        (equipment_id, borrower_name, nim, fakultas, borrow_date, return_date)
                     )
                     cur.execute("SELECT name FROM equipment WHERE id = %s", (equipment_id,))
                     equip = cur.fetchone()
@@ -132,6 +151,83 @@ def index():
                 message = f"Kesalahan: {e}"
     
     return render_template("index.html", message=message, equipment_list=equipment_list)
+
+
+@app.route("/status")
+def status_peminjaman():
+    """Show current borrowing status (items with status = 'borrowed')"""
+    borrows = []
+    message = None
+    
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT br.id, br.equipment_id, e.name as equipment_name, br.borrower_name, 
+                       br.nim, br.fakultas, br.borrow_date, br.return_date, br.status
+                FROM borrow_records br
+                JOIN equipment e ON br.equipment_id = e.id
+                WHERE br.status = 'borrowed'
+                ORDER BY br.borrow_date DESC
+            """)
+            borrows = cur.fetchall()
+        conn.close()
+    except Exception as e:
+        message = f"Gagal memuat status: {e}"
+    
+    return render_template("status.html", borrows=borrows, message=message)
+
+
+@app.route("/riwayat")
+def riwayat_peminjaman():
+    """Show borrowing history (items with status = 'returned')"""
+    borrows = []
+    message = None
+    
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT br.id, br.equipment_id, e.name as equipment_name, br.borrower_name, 
+                       br.nim, br.fakultas, br.borrow_date, br.return_date, br.status
+                FROM borrow_records br
+                JOIN equipment e ON br.equipment_id = e.id
+                WHERE br.status = 'returned'
+                ORDER BY br.return_date DESC
+            """)
+            borrows = cur.fetchall()
+        conn.close()
+    except Exception as e:
+        message = f"Gagal memuat riwayat: {e}"
+    
+    return render_template("riwayat.html", borrows=borrows, message=message)
+
+
+@app.route("/daftar-alat")
+def daftar_alat():
+    """Show all equipment with availability"""
+    equipment_list = []
+    message = None
+    
+    try:
+        conn = get_db()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT e.id, e.name, e.quantity,
+                       COUNT(CASE WHEN br.status = 'borrowed' THEN 1 END) as borrowed_count,
+                       COUNT(br.id) as total_borrowed_history
+                FROM equipment e
+                LEFT JOIN borrow_records br ON e.id = br.equipment_id
+                GROUP BY e.id, e.name, e.quantity
+                ORDER BY e.name
+            """)
+            equipment_list = cur.fetchall()
+        conn.close()
+    except Exception as e:
+        message = f"Gagal memuat daftar alat: {e}"
+    
+    return render_template("daftar_alat.html", equipment_list=equipment_list, message=message)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)

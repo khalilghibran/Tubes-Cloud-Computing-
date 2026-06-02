@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peminjaman Alat Lab</title>
+    <title>Riwayat Peminjaman</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
@@ -126,27 +126,6 @@
             font-weight: 600;
         }
         
-        .profile-section {
-            padding: 20px;
-            margin-top: 30px;
-            border-top: 1px solid #ddd;
-        }
-        
-        .profile-link {
-            display: block;
-            padding: 10px;
-            color: #666;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-        
-        .profile-link:hover {
-            background: #e8e8e8;
-            color: #8B3A3A;
-        }
-        
         /* Main Content */
         .main-content {
             flex: 1;
@@ -169,13 +148,12 @@
             font-size: 14px;
         }
         
-        /* Form Card */
-        .form-card {
+        /* Table Card */
+        .table-card {
             background: white;
             border-radius: 8px;
             padding: 30px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-            max-width: 600px;
         }
         
         .msg { 
@@ -196,60 +174,53 @@
             border-left-color: #721c24;
         }
         
-        form { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 20px; 
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
         
-        .form-group { 
-            display: flex; 
-            flex-direction: column; 
-        }
-        
-        label { 
-            font-weight: 600; 
-            color: #333;
-            margin-bottom: 8px;
+        th {
+            background: linear-gradient(135deg, #8B3A3A 0%, #A84C4C 100%);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
             font-size: 14px;
         }
         
-        input, select { 
-            padding: 12px; 
-            font-size: 14px; 
-            border: 1px solid #ddd; 
-            border-radius: 4px;
-            transition: all 0.3s;
-            font-family: inherit;
-            background: white;
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
         }
         
-        input:focus, select:focus { 
-            outline: none;
-            border-color: #8B3A3A;
-            box-shadow: 0 0 0 3px rgba(139, 58, 58, 0.1);
+        tr:hover {
+            background-color: #f9f9f9;
         }
         
-        button { 
-            padding: 12px; 
-            font-size: 16px;
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
             font-weight: 600;
-            background: linear-gradient(135deg, #8B3A3A 0%, #A84C4C 100%);
-            color: white; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
+            font-size: 12px;
         }
         
-        button:hover { 
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(139, 58, 58, 0.3);
+        .status-returned {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
         }
         
-        button:active { 
-            transform: translateY(0); 
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
         }
         
         /* Responsive */
@@ -263,16 +234,15 @@
                 width: 100%;
                 border-right: none;
                 border-bottom: 1px solid #ddd;
-                display: none;
-            }
-            
-            .header {
-                flex-direction: column;
-                gap: 10px;
             }
             
             .main-content {
                 padding: 20px;
+            }
+            
+            .table-card {
+                padding: 20px;
+                overflow-x: auto;
             }
         }
     </style>
@@ -298,80 +268,60 @@
         <div class="sidebar">
             <div class="sidebar-title">Menu</div>
             <ul class="sidebar-menu">
-                <li><a href="/" class="active">Pinjam Alat</a></li>
+                <li><a href="/">Pinjam Alat</a></li>
                 <li><a href="/status">Status Peminjaman</a></li>
-                <li><a href="/riwayat">Riwayat Peminjaman</a></li>
+                <li><a href="/riwayat" class="active">Riwayat Peminjaman</a></li>
                 <li><a href="/daftar-alat">Daftar Alat</a></li>
             </ul>
-            
-            <!-- Profile section disabled - implement when needed
-            <div class="profile-section">
-                <a href="#" class="profile-link">Profil Saya</a>
-                <a href="#" class="profile-link">Pengaturan</a>
-                <a href="#" class="profile-link">Logout</a>
-            </div>
-            -->
         </div>
         
         <!-- Main Content -->
         <div class="main-content">
             <div class="content-header">
-                <h2>Peminjaman Alat Laboratorium</h2>
-                <p>Lengkapi form di bawah untuk meminjam alat laboratorium</p>
+                <h2>Riwayat Peminjaman</h2>
+                <p>Daftar alat yang sudah dikembalikan</p>
             </div>
             
-            <div class="form-card">
+            <div class="table-card">
                 {% if message %}
-                    <div class="msg {% if 'Error' in message or 'Please' in message %}error{% else %}success{% endif %}">{{ message }}</div>
+                    <div class="msg {% if 'Error' in message or 'Gagal' in message %}error{% else %}success{% endif %}">{{ message }}</div>
                 {% endif %}
                 
-                <form method="POST">
-                    <div class="form-group">
-                        <label for="equipment">Pilih Alat:</label>
-                        <select name="equipment_id" id="equipment" required>
-                            <option value="">-- Pilih Alat --</option>
-                            {% for equip in equipment_list %}
-                            <option value="{{ equip.id }}">{{ equip.name }} ({% if equip.borrowed_count > 0 %}{{ equip.borrowed_count }} dipinjam{% else %}Tersedia{% endif %})</option>
+                {% if borrows %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Alat</th>
+                                <th>Peminjam</th>
+                                <th>NIM</th>
+                                <th>Fakultas</th>
+                                <th>Tanggal Pinjam</th>
+                                <th>Tgl. Pengembalian</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for borrow in borrows %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td><strong>{{ borrow.equipment_name }}</strong></td>
+                                <td>{{ borrow.borrower_name }}</td>
+                                <td>{{ borrow.nim }}</td>
+                                <td>{{ borrow.fakultas }}</td>
+                                <td>{{ borrow.borrow_date.strftime('%d-%m-%Y %H:%M') if borrow.borrow_date else '-' }}</td>
+                                <td>{{ borrow.return_date.strftime('%d-%m-%Y') if borrow.return_date else '-' }}</td>
+                                <td><span class="status-badge status-returned">Dikembalikan</span></td>
+                            </tr>
                             {% endfor %}
-                        </select>
+                        </tbody>
+                    </table>
+                {% else %}
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>Belum ada riwayat peminjaman</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="borrower">Nama Anda:</label>
-                        <input type="text" name="borrower_name" id="borrower" placeholder="Masukkan nama lengkap Anda" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="nim">Nomor Induk Mahasiswa (NIM):</label>
-                        <input type="text" name="nim" id="nim" placeholder="Contoh: 12345678" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="fakultas">Fakultas:</label>
-                        <select name="fakultas" id="fakultas" required>
-                            <option value="">-- Pilih Fakultas --</option>
-                            <option value="Fakultas Teknik Elektro">Fakultas Teknik Elektro</option>
-                            <option value="Fakultas Rekayasa Industri">Fakultas Rekayasa Industri</option>
-                            <option value="Fakultas Informatika">Fakultas Informatika</option>
-                            <option value="Fakultas Ekonomi dan Bisnis">Fakultas Ekonomi dan Bisnis</option>
-                            <option value="Fakultas Komunikasi dan Ilmu Sosial">Fakultas Komunikasi dan Ilmu Sosial</option>
-                            <option value="Fakultas Industri Kreatif">Fakultas Industri Kreatif</option>
-                            <option value="Fakultas Ilmu Terapan">Fakultas Ilmu Terapan</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="borrow_date">Tanggal Peminjaman:</label>
-                        <input type="date" name="borrow_date" id="borrow_date" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="return_date">Tanggal Pengembalian:</label>
-                        <input type="date" name="return_date" id="return_date" required>
-                    </div>
-                    
-                    <button type="submit">Pinjam Alat</button>
-                </form>
+                {% endif %}
             </div>
         </div>
     </div>
