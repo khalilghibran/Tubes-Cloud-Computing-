@@ -284,7 +284,7 @@
             <img src="{{ url_for('static', filename='telkom-logo.png') }}" alt="Telkom University">
             <div class="header-title">Lab Equipment System</div>
         </div>
-        <div class="header-user">Sistem Peminjaman Alat Laboratorium</div>
+        <div class="header-user">Sistem Kelola Peminjaman Alat</div>
     </div>
     
     <!-- Navigation Tabs -->
@@ -322,7 +322,7 @@
             
             <div class="form-card">
                 {% if message %}
-                    <div class="msg {% if 'Error' in message or 'Please' in message %}error{% else %}success{% endif %}">{{ message }}</div>
+                    <div class="msg {% if 'berhasil' in message %}success{% else %}error{% endif %}">{{ message }}</div>
                 {% endif %}
                 
                 <form method="POST">
@@ -369,6 +369,27 @@
                         <label for="return_date">Tanggal Pengembalian:</label>
                         <input type="date" name="return_date" id="return_date" required>
                     </div>
+                    
+                    <script>
+                        (function() {
+                            var today = new Date().toISOString().split('T')[0];
+                            var borrowInput = document.getElementById('borrow_date');
+                            var returnInput = document.getElementById('return_date');
+                            
+                            borrowInput.setAttribute('min', today);
+                            
+                            borrowInput.addEventListener('change', function() {
+                                returnInput.setAttribute('min', this.value);
+                                if (returnInput.value && returnInput.value < this.value) {
+                                    returnInput.value = '';
+                                }
+                            });
+                            
+                            if (borrowInput.value) {
+                                returnInput.setAttribute('min', borrowInput.value);
+                            }
+                        })();
+                    </script>
                     
                     <button type="submit">Pinjam Alat</button>
                 </form>

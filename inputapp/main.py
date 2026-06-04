@@ -3,6 +3,9 @@ import pymysql
 import random
 from flask import Flask, request, render_template
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+WIB = ZoneInfo("Asia/Jakarta")
 
 app = Flask(__name__)
 
@@ -131,6 +134,24 @@ def index():
         if not equipment_id or not borrower_name or not nim or not fakultas or not borrow_date or not return_date:
             message = "Silakan lengkapi semua data."
         else:
+            try:
+                borrow_date_obj = datetime.strptime(borrow_date, "%Y-%m-%d").date()
+                return_date_obj = datetime.strptime(return_date, "%Y-%m-%d").date()
+                today = datetime.now(WIB).date()
+
+                valid = True
+                if borrow_date_obj < today:
+                    message = "Tanggal peminjaman tidak boleh sebelum hari ini."
+                    valid = False
+                elif return_date_obj < borrow_date_obj:
+                    valid = False
+
+                if not valid:
+                    return render_template("index.html", message=message, equipment_list=equipment_list)
+            except ValueError:
+                message = "Format tanggal tidak valid."
+                return render_template("index.html", message=message, equipment_list=equipment_list)
+
             try:
                 conn = get_db()
                 with conn.cursor() as cur:

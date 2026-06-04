@@ -133,8 +133,6 @@
         .overdue-card { border-left: 4px solid #dc3545; }
 
         .empty-state { text-align: center; padding: 40px; color: #999; }
-        .empty-state-icon { font-size: 48px; margin-bottom: 10px; }
-
         @media (max-width: 768px) {
             .wrapper { flex-direction: column; height: auto; }
             .sidebar { width: 100%; border-right: none; border-bottom: 1px solid #ddd; }
@@ -150,7 +148,7 @@
             <img src="{{ url_for('static', filename='telkom-logo.png') }}" alt="Telkom University">
             <div class="header-title">Lab Equipment System</div>
         </div>
-        <div class="header-user">Laporan Peminjaman Alat Laboratorium</div>
+        <div class="header-user">Sistem Kelola Peminjaman Alat</div>
     </div>
 
     <div class="nav-tabs">
@@ -209,15 +207,35 @@
                 <form method="GET" class="filter-row">
                     <div class="filter-group">
                         <label>Dari Tanggal:</label>
-                        <input type="date" name="date_from" value="{{ date_from }}">
+                        <input type="date" name="date_from" id="date_from" value="{{ date_from }}">
                     </div>
                     <div class="filter-group">
                         <label>Sampai Tanggal:</label>
-                        <input type="date" name="date_to" value="{{ date_to }}">
+                        <input type="date" name="date_to" id="date_to" value="{{ date_to }}">
                     </div>
                     <button type="submit" class="filter-btn">Tampilkan</button>
                     <a href="/api/laporan/export?date_from={{ date_from }}&date_to={{ date_to }}" class="export-btn">Export CSV</a>
                 </form>
+                <script>
+                    (function() {
+                        var fromInput = document.getElementById('date_from');
+                        var toInput = document.getElementById('date_to');
+                        fromInput.addEventListener('change', function() {
+                            toInput.setAttribute('min', this.value);
+                            if (toInput.value && toInput.value < this.value) {
+                                toInput.value = '';
+                            }
+                        });
+                        toInput.addEventListener('change', function() {
+                            fromInput.setAttribute('max', this.value);
+                            if (fromInput.value && fromInput.value > this.value) {
+                                fromInput.value = '';
+                            }
+                        });
+                        if (fromInput.value) toInput.setAttribute('min', fromInput.value);
+                        if (toInput.value) fromInput.setAttribute('max', toInput.value);
+                    })();
+                </script>
             </div>
 
             <div class="card">
@@ -265,7 +283,6 @@
                 </table>
                 {% else %}
                 <div class="empty-state">
-                    <div class="empty-state-icon">📊</div>
                     <p>Tidak ada data peminjaman untuk periode ini</p>
                 </div>
                 {% endif %}

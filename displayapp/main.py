@@ -4,6 +4,9 @@ import io
 import pymysql
 from flask import Flask, render_template, request, jsonify, Response
 from datetime import datetime, date, timedelta
+from zoneinfo import ZoneInfo
+
+WIB = ZoneInfo("Asia/Jakarta")
 
 app = Flask(__name__)
 
@@ -99,7 +102,7 @@ def index():
                     return_date = record['return_date']
                     if isinstance(return_date, str):
                         return_date = datetime.strptime(return_date, '%Y-%m-%d')
-                    today = datetime.now().date()
+                    today = datetime.now(WIB).date()
                     if return_date.date() < today:
                         record['is_overdue'] = True
                         record['days_overdue'] = (today - return_date.date()).days
@@ -121,6 +124,12 @@ def accept_request():
         conn = get_db()
         with conn.cursor() as cur:
             ensure_schema(cur)
+            cur.execute("SELECT borrow_date FROM borrow_records WHERE id = %s", (record_id,))
+            rec = cur.fetchone()
+            if not rec:
+                return jsonify({"success": False, "message": "Record tidak ditemukan"}), 404
+            if rec['borrow_date'] and rec['borrow_date'].date() < datetime.now(WIB).date():
+                return jsonify({"success": False, "message": "Tanggal peminjaman sudah lewat, tidak dapat diterima."}), 400
             cur.execute("""
                 UPDATE borrow_records 
                 SET request_status = 'accepted', status = 'borrowed'
@@ -181,9 +190,24 @@ def return_equipment():
 @app.route("/laporan")
 def laporan():
     error = None
-    today = date.today()
+    today = datetime.now(WIB).date()
     date_from = request.args.get("date_from", (today - timedelta(days=30)).isoformat())
     date_to = request.args.get("date_to", today.isoformat())
+
+    if date_from and date_to:
+        try:
+            if date.fromisoformat(date_from) > date.fromisoformat(date_to):
+                error = "Tanggal 'Dari' tidak boleh lebih besar dari tanggal 'Sampai'."
+                return render_template("laporan.html", error=error, total=0, borrowed=0,
+                                       returned=0, overdue=0, pending=0, rejected=0,
+                                       records=[], overdue_records=[],
+                                       date_from=date_from, date_to=date_to)
+        except ValueError:
+            error = "Format tanggal tidak valid."
+            return render_template("laporan.html", error=error, total=0, borrowed=0,
+                                   returned=0, overdue=0, pending=0, rejected=0,
+                                   records=[], overdue_records=[],
+                                   date_from=date_from, date_to=date_to)
 
     try:
         conn = get_db()
@@ -304,7 +328,7 @@ def laporan_export():
         return Response(
             csv_content,
             mimetype="text/csv",
-            headers={"Content-disposition": f"attachment; filename=laporan_peminjaman_{date.today().isoformat()}.csv"}
+            headers={"Content-disposition": f"attachment; filename=laporan_peminjaman_{datetime.now(WIB).date().isoformat()}.csv"}
         )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
